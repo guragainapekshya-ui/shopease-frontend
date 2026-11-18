@@ -28,6 +28,7 @@ import {
   updateCartItem,
   deleteCartItem
 } from "./services/cartAPI";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // PROTECT PRIVATE PAGES
 function ProtectedRoute({ isLoggedIn, children }) {
@@ -73,10 +74,9 @@ function Home({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(
-          "http://127.0.0.1:8000/api/products/"
-        );
-
+      const response = await fetch(
+  `${API_BASE_URL}/api/products/`
+);
         if (!response.ok) {
           throw new Error("Failed to fetch products");
         }
@@ -95,7 +95,7 @@ function Home({
           image: product.image
             ? product.image.startsWith("http")
               ? product.image
-              : `http://127.0.0.1:8000${product.image}`
+              : `${API_BASE_URL}${product.image}`
             : localProductImages[product.name],
           description: product.description,
           brand: product.brand,
@@ -670,7 +670,7 @@ function App() {
       try {
         const [cartResponse, productsResponse] = await Promise.all([
           getCart(),
-          fetch("http://127.0.0.1:8000/api/products/")
+          fetch(`${API_BASE_URL}/api/products/`)
         ]);
 
         if (!productsResponse.ok) {
@@ -701,7 +701,7 @@ function App() {
           image: product.image
             ? product.image.startsWith("http")
               ? product.image
-              : `http://127.0.0.1:8000${product.image}`
+             : `${API_BASE_URL}${product.image}`
             : localProductImages[product.name],
           description: product.description,
           brand: product.brand,

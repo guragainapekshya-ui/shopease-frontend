@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 function ProductDetails({ addToCart }) {
   const { id } = useParams();
 
@@ -30,7 +32,7 @@ function ProductDetails({ addToCart }) {
 
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/products/${id}/`
+          `${API_BASE_URL}/api/products/${id}/`
         );
 
         if (!response.ok) {
@@ -47,7 +49,7 @@ function ProductDetails({ addToCart }) {
           image: data.image
             ? data.image.startsWith("http")
               ? data.image
-              : `http://127.0.0.1:8000${data.image}`
+              : `${API_BASE_URL}${data.image}`
             : localProductImages[data.name],
           description: data.description,
           brand: data.brand,
@@ -120,7 +122,6 @@ function ProductDetails({ addToCart }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 bg-white rounded-3xl shadow-lg p-5 sm:p-8 lg:p-12">
 
-          {/* Product Image */}
           <div className="bg-gray-50 rounded-2xl flex items-center justify-center p-6 min-h-80">
             <img
               src={product.image}
@@ -129,7 +130,6 @@ function ProductDetails({ addToCart }) {
             />
           </div>
 
-          {/* Product Information */}
           <div className="flex flex-col justify-center">
 
             <span className="inline-block w-fit bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full mb-5">
@@ -226,7 +226,6 @@ function ProductDetails({ addToCart }) {
           </div>
         </div>
 
-        {/* Additional Information */}
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-gray-800 mb-3">
             Product Information

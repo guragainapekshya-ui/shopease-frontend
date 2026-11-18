@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const ORDER_API = "http://127.0.0.1:8000/api/orders/";
-const PRODUCT_API = "http://127.0.0.1:8000/api/products/";
-const BACKEND_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const ORDER_API = `${API_BASE_URL}/api/orders/`;
+const PRODUCT_API = `${API_BASE_URL}/api/products/`;
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -116,7 +116,7 @@ function MyOrders() {
 
     return image.startsWith("http")
       ? image
-      : `${BACKEND_URL}${image.startsWith("/") ? "" : "/"}${image}`;
+      : `${API_BASE_URL}${image.startsWith("/") ? "" : "/"}${image}`;
   };
 
   if (loading) {

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const API_URL = "http://127.0.0.1:8000/api/accounts/profile/";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/accounts/profile/`;
 
 const emptyProfile = {
   username: "",
@@ -24,7 +24,6 @@ function Profile() {
   const inputClass =
     "w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500 transition";
 
-  // Fetch profile from Django
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("access_token");
@@ -73,7 +72,6 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -83,7 +81,6 @@ function Profile() {
     }));
   };
 
-  // Enable editing
   const handleEdit = (e) => {
     e.preventDefault();
 
@@ -93,7 +90,6 @@ function Profile() {
     setIsEditing(true);
   };
 
-  // Cancel editing
   const handleCancel = (e) => {
     e.preventDefault();
 
@@ -103,7 +99,6 @@ function Profile() {
     setError(false);
   };
 
-  // Save profile to Django
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -186,7 +181,6 @@ function Profile() {
     <div className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6">
       <div className="max-w-3xl mx-auto">
 
-        {/* Header */}
         <div className="flex justify-between items-center mb-10">
           <Link
             to="/"
@@ -203,7 +197,6 @@ function Profile() {
           </Link>
         </div>
 
-        {/* Heading */}
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
             My Account
@@ -214,10 +207,8 @@ function Profile() {
           </p>
         </div>
 
-        {/* Profile Card */}
         <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-10">
 
-          {/* Avatar */}
           <div className="text-center mb-8">
             <div className="w-24 h-24 mx-auto rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl font-bold shadow-md">
               {(fullName || profile.username || "U")
@@ -234,7 +225,6 @@ function Profile() {
             </p>
           </div>
 
-          {/* Messages */}
           {message && (
             <div
               className={`p-4 rounded-xl text-center text-sm font-medium mb-6 whitespace-pre-wrap ${
@@ -249,13 +239,11 @@ function Profile() {
             </div>
           )}
 
-          {/* Form */}
           <form
             onSubmit={handleSubmit}
             className="space-y-5"
           >
 
-            {/* Username */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Username
@@ -272,7 +260,6 @@ function Profile() {
               />
             </div>
 
-            {/* First Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 First Name
@@ -288,7 +275,6 @@ function Profile() {
               />
             </div>
 
-            {/* Last Name */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Last Name
@@ -304,7 +290,6 @@ function Profile() {
               />
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address
@@ -321,7 +306,6 @@ function Profile() {
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-3">
 
               {!isEditing ? (
@@ -358,7 +342,6 @@ function Profile() {
           </form>
         </div>
 
-        {/* Quick Links */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-7">
           <Link
             to="/orders"

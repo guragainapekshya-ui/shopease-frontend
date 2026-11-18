@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = "http://127.0.0.1:8000/api/orders/";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/orders/`;
 
 function Checkout({ cartItems, clearCart }) {
   const navigate = useNavigate();
@@ -65,9 +65,7 @@ function Checkout({ cartItems, clearCart }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.detail || JSON.stringify(data)
-        );
+        throw new Error(data.detail || JSON.stringify(data));
       }
 
       const order = {

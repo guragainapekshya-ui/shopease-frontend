@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_URL = `${import.meta.env.VITE_API_URL}/api/accounts/register/`;
+
 function Register() {
   const [formData, setFormData] = useState({
     username: "",
@@ -43,17 +45,14 @@ function Register() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/accounts/register/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(registrationData),
-        }
-      );
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(registrationData),
+      });
 
       const responseText = await response.text();
 
@@ -87,7 +86,6 @@ function Register() {
       alert("Registration successful! Please login.");
 
       navigate("/login");
-
     } catch (err) {
       setError(
         err.message || "Unable to connect to the backend."
@@ -99,7 +97,6 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-
       <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl p-7 sm:p-10">
 
         <Link

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_URL = `${import.meta.env.VITE_API_URL}/api/accounts/login/`;
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,19 +25,16 @@ function Login() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/accounts/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
       const data = await response.json();
 
@@ -46,7 +45,9 @@ function Login() {
       }
 
       if (!data.access || !data.refresh) {
-        throw new Error("Login failed. Authentication tokens were not received.");
+        throw new Error(
+          "Login failed. Authentication tokens were not received."
+        );
       }
 
       // Save JWT tokens
@@ -89,7 +90,6 @@ function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* EMAIL */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Email Address
@@ -105,7 +105,6 @@ function Login() {
             />
           </div>
 
-          {/* PASSWORD */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Password
@@ -131,14 +130,12 @@ function Login() {
             </div>
           </div>
 
-          {/* ERROR MESSAGE */}
           {error && (
             <p className="text-red-600 text-sm text-center">
               {error}
             </p>
           )}
 
-          {/* LOGIN BUTTON */}
           <button
             type="submit"
             disabled={loading}
@@ -149,7 +146,6 @@ function Login() {
 
         </form>
 
-        {/* REGISTER LINK */}
         <p className="text-center text-gray-600 mt-7">
           Don't have an account?{" "}
           <Link
@@ -160,7 +156,6 @@ function Login() {
           </Link>
         </p>
 
-        {/* BACK TO HOME */}
         <div className="text-center mt-6">
           <Link
             to="/"
