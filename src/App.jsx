@@ -12,13 +12,13 @@ import {
 import "./index.css";
 
 import ProductDetails from "./pages/ProductDetails";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Wishlist from "./pages/Wishlist";
-import Checkout from "./pages/Checkout";
-import OrderConfirmation from "./pages/OrderConfirmation";
-import MyOrders from "./pages/MyOrders";
-import Profile from "./pages/Profile";
+import Login from "./pages/login";
+import Register from "./pages/register";
+import Wishlist from "./pages/wishlist";
+import Checkout from "./pages/checkout";
+import OrderConfirmation from "./pages/orderconfirmation";
+import MyOrders from "./pages/myorders";
+import Profile from "./pages/profile";
 
 import Cart from "./components/Cart";
 
