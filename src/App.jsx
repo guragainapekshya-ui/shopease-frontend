@@ -20,7 +20,7 @@ import OrderConfirmation from "./pages/orderconfirmation";
 import MyOrders from "./pages/myorders";
 import Profile from "./pages/profile";
 
-import Cart from "./components/Cart";
+import Cart from "./components/cart";
 
 import {
   getCart,
