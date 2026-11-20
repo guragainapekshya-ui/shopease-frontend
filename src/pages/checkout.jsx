@@ -2,7 +2,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/orders/`;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = `${API_BASE_URL}/api/orders/`;
+const PAYMENT_API_URL = `${API_BASE_URL}/api/payments/initiate/`;
 
 function Checkout({ cartItems, clearCart }) {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ function Checkout({ cartItems, clearCart }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -48,6 +51,7 @@ function Checkout({ cartItems, clearCart }) {
         throw new Error("Please log in before placing your order.");
       }
 
+      // Step 1: Create the order in Django
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -68,16 +72,57 @@ function Checkout({ cartItems, clearCart }) {
         throw new Error(data.detail || JSON.stringify(data));
       }
 
+      // Step 2: Prepare order information
       const order = {
         orderId: data.id,
         customer: { ...formData },
         items: cartItems.map((item) => ({ ...item })),
         total: Number(data.total_amount),
-        paymentMethod: "Cash on Delivery",
+        paymentMethod:
+          paymentMethod === "cod" ? "Cash on Delivery" : "Khalti",
         orderDate: new Date(data.created_at).toLocaleString(),
         status: data.status,
       };
 
+      // Step 3: Handle Khalti payment
+      if (paymentMethod === "khalti") {
+        const paymentResponse = await fetch(PAYMENT_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            order_id: data.id,
+          }),
+        });
+
+        const paymentData = await paymentResponse.json();
+
+        if (!paymentResponse.ok) {
+          throw new Error(
+            paymentData.detail || "Unable to start Khalti payment."
+          );
+        }
+
+        if (!paymentData.payment_url) {
+          throw new Error("Khalti did not return a payment URL.");
+        }
+
+        // Save the cart/order information before leaving ShopEase
+        localStorage.setItem(
+          "shopease_pending_order",
+          JSON.stringify(order)
+        );
+
+        clearCart();
+
+        // Redirect customer to Khalti Sandbox
+        window.location.href = paymentData.payment_url;
+        return;
+      }
+
+      // Step 4: Existing Cash on Delivery flow
       clearCart();
 
       navigate("/order-confirmation", {
@@ -95,12 +140,15 @@ function Checkout({ cartItems, clearCart }) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white p-10 rounded-2xl shadow-md text-center max-w-md w-full">
           <div className="text-6xl mb-4">🛒</div>
+
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
             Your Cart is Empty!
           </h2>
+
           <p className="text-gray-500 mb-6">
             Add some products before proceeding to checkout.
           </p>
+
           <Link
             to="/"
             className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition"
@@ -147,6 +195,7 @@ function Checkout({ cartItems, clearCart }) {
                 <label className="block font-semibold text-gray-700 mb-2">
                   Full Name
                 </label>
+
                 <input
                   type="text"
                   name="name"
@@ -162,6 +211,7 @@ function Checkout({ cartItems, clearCart }) {
                 <label className="block font-semibold text-gray-700 mb-2">
                   Phone Number
                 </label>
+
                 <input
                   type="tel"
                   name="phone"
@@ -177,6 +227,7 @@ function Checkout({ cartItems, clearCart }) {
                 <label className="block font-semibold text-gray-700 mb-2">
                   Delivery Address
                 </label>
+
                 <textarea
                   name="address"
                   value={formData.address}
@@ -192,6 +243,7 @@ function Checkout({ cartItems, clearCart }) {
                 <label className="block font-semibold text-gray-700 mb-2">
                   City
                 </label>
+
                 <input
                   type="text"
                   name="city"
@@ -204,27 +256,76 @@ function Checkout({ cartItems, clearCart }) {
               </div>
             </div>
 
+            {/* Payment Method */}
             <div className="mt-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
                 Payment Method
               </h2>
 
-              <div className="flex items-center gap-3 border border-indigo-200 bg-indigo-50 rounded-xl p-4">
-                <input
-                  type="radio"
-                  checked
-                  readOnly
-                  className="w-5 h-5 accent-indigo-600"
-                />
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    Cash on Delivery
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Pay when your order arrives.
-                  </p>
-                </div>
-                <span className="ml-auto text-2xl">💵</span>
+              <div className="space-y-3">
+                {/* Cash on Delivery */}
+                <label
+                  className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer ${
+                    paymentMethod === "cod"
+                      ? "border-indigo-300 bg-indigo-50"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={paymentMethod === "cod"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value)
+                    }
+                    className="w-5 h-5 accent-indigo-600"
+                  />
+
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Cash on Delivery
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Pay when your order arrives.
+                    </p>
+                  </div>
+
+                  <span className="ml-auto text-2xl">💵</span>
+                </label>
+
+                {/* Khalti */}
+                <label
+                  className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer ${
+                    paymentMethod === "khalti"
+                      ? "border-purple-300 bg-purple-50"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="khalti"
+                    checked={paymentMethod === "khalti"}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value)
+                    }
+                    className="w-5 h-5 accent-purple-600"
+                  />
+
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      Pay with Khalti
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      Pay online using Khalti Sandbox.
+                    </p>
+                  </div>
+
+                  <span className="ml-auto text-2xl">💜</span>
+                </label>
               </div>
             </div>
 
@@ -239,10 +340,15 @@ function Checkout({ cartItems, clearCart }) {
               disabled={loading}
               className="w-full mt-8 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-bold py-4 rounded-xl transition shadow-md"
             >
-              {loading ? "Placing Order..." : "Place Order"}
+              {loading
+                ? "Processing..."
+                : paymentMethod === "khalti"
+                  ? "Continue to Khalti"
+                  : "Place Order"}
             </button>
           </form>
 
+          {/* Order Summary */}
           <div className="h-fit bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               Your Order
@@ -250,7 +356,10 @@ function Checkout({ cartItems, clearCart }) {
 
             <div className="space-y-5">
               {cartItems.map((item) => (
-                <div className="flex items-center gap-3" key={item.id}>
+                <div
+                  className="flex items-center gap-3"
+                  key={item.id}
+                >
                   <img
                     src={item.image}
                     alt={item.name}
@@ -261,13 +370,15 @@ function Checkout({ cartItems, clearCart }) {
                     <p className="font-semibold text-gray-800 truncate">
                       {item.name}
                     </p>
+
                     <p className="text-sm text-gray-500">
                       Quantity: {item.quantity}
                     </p>
                   </div>
 
                   <strong className="text-gray-800 whitespace-nowrap">
-                    Rs. {(item.price * item.quantity).toLocaleString("en-IN")}
+                    Rs.{" "}
+                    {(item.price * item.quantity).toLocaleString("en-IN")}
                   </strong>
                 </div>
               ))}
@@ -277,6 +388,7 @@ function Checkout({ cartItems, clearCart }) {
 
             <div className="flex justify-between items-center mb-3 text-gray-600">
               <span>Total Items</span>
+
               <span>
                 {cartItems.reduce(
                   (total, item) => total + item.quantity,
@@ -287,6 +399,7 @@ function Checkout({ cartItems, clearCart }) {
 
             <div className="flex justify-between items-center text-lg font-bold text-gray-900">
               <span>Total Amount</span>
+
               <span className="text-indigo-600">
                 Rs. {subtotal.toLocaleString("en-IN")}
               </span>

@@ -19,6 +19,7 @@ import Checkout from "./pages/checkout";
 import OrderConfirmation from "./pages/orderconfirmation";
 import MyOrders from "./pages/myorders";
 import Profile from "./pages/profile";
+import PaymentResult from "./pages/paymentresult";
 
 import Cart from "./components/cart";
 
@@ -29,6 +30,7 @@ import {
   deleteCartItem
 } from "./services/cartAPI";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+console.log("Backend URL:", API_BASE_URL);
 
 // PROTECT PRIVATE PAGES
 function ProtectedRoute({ isLoggedIn, children }) {
@@ -955,6 +957,10 @@ function App() {
             />
           }
         />
+        <Route
+  path="/payment-result"
+  element={<PaymentResult />}
+/>
 
         {/* LOGIN AND REGISTER */}
         <Route path="/login" element={<Login />} />
